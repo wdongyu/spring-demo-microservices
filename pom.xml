@@ -5,18 +5,16 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.3.RELEASE</version>
+		<version>1.5.6.RELEASE</version>
 	</parent>
 
 	<groupId>org.springframework.samples</groupId>
 	<artifactId>spring-demo-microservices</artifactId>
-	<version>1.5.3</version>
+	<version>1.5.6</version>
     <name>${project.artifactId}</name>
 	<packaging>pom</packaging>
 
     <modules>
-	<module>spring-demo-portal-service</module>
-	<module>spring-demo-auth-service</module>
 	<module>spring-demo-proc-service</module>
 	<module>spring-demo-db-service</module>
 	<module>spring-demo-config-server</module>
