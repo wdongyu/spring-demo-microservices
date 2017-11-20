@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 /**
  * @author wdongyu
  */
@@ -21,15 +23,27 @@ public class ProcController {
 
     @Autowired
     RestTemplate restTemplate;
-    //private DiscoveryClient client;
+
+    @Autowired
+    private DiscoveryClient client;
+
+    public String serviceUrl(String serviceName) {
+    	List<ServiceInstance> list = this.client.getInstances(serviceName);
+    	if (list != null && list.size() > 0 ) {
+            return list.get(list.size()-1).getUri().toString();
+    	}
+    	return null;
+    }
 
     @RequestMapping(value = "/proc" ,method = RequestMethod.GET)
     public String proc() {
         //ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
-	String fromAuth = restTemplate.getForEntity("http://localhost:8082/auth",String.class).getBody();
-	String fromDb = restTemplate.getForEntity("http://localhost:8084/db",String.class).getBody();
+	String authUrl = serviceUrl("auth-service");
+	String dbUrl = serviceUrl("db-service");
+	String fromAuth = restTemplate.getForEntity(authUrl + "/auth",String.class).getBody();
+	String fromDb = restTemplate.getForEntity(dbUrl + "/db",String.class).getBody();
 	return (" ---  Process part  --- " + '\n' + fromAuth + '\n' + fromDb);
     }
 

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 /**
  * @author wdongyu
  */
@@ -21,15 +23,27 @@ public class PortalController {
 
     @Autowired
     RestTemplate restTemplate;
-    //private DiscoveryClient client;
+
+    @Autowired
+    private DiscoveryClient client;
+
+    public String serviceUrl(String serviceName) {
+    	List<ServiceInstance> list = this.client.getInstances(serviceName);
+    	if (list != null && list.size() > 0 ) {
+	    return list.get(list.size()-1).getUri().toString();
+    	}
+    	return null;
+    }
 
     @RequestMapping(value = "/portal" ,method = RequestMethod.GET)
     public String portal() {
         //ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
-	String fromAuth = restTemplate.getForEntity("http://localhost:8082/auth",String.class).getBody();
-	String fromProc = restTemplate.getForEntity("http://localhost:8083/proc",String.class).getBody();
+	String authUrl = this.serviceUrl("auth-service");
+	String procUrl = this.serviceUrl("proc-service");
+	String fromAuth = restTemplate.getForEntity(authUrl + "/auth", String.class).getBody();
+	String fromProc = restTemplate.getForEntity(procUrl + "/proc", String.class).getBody();
 	return (" ---  Portal part  --- " + '\n' + fromAuth + '\n' + fromProc);
     }
 
