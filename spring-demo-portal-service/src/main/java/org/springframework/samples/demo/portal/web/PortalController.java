@@ -40,10 +40,10 @@ public class PortalController {
         //ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
-	String authUrl = this.serviceUrl("auth-service");
-	String procUrl = this.serviceUrl("proc-service");
-	String fromAuth = restTemplate.getForEntity(authUrl + "/auth", String.class).getBody();
-	String fromProc = restTemplate.getForEntity(procUrl + "/proc", String.class).getBody();
+	//String authUrl = this.serviceUrl("auth-service");
+	//String procUrl = this.serviceUrl("proc-service");
+	String fromAuth = restTemplate.getForEntity("http://auth-service/auth", String.class).getBody();
+	String fromProc = restTemplate.getForEntity("http://proc-service/proc", String.class).getBody();
 	return (" ---  Portal part  --- " + '\n' + fromAuth + '\n' + fromProc);
     }
 
