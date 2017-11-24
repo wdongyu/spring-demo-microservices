@@ -40,10 +40,10 @@ public class ProcController {
         //ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
-	String authUrl = serviceUrl("auth-service");
-	String dbUrl = serviceUrl("db-service");
-	String fromAuth = restTemplate.getForEntity(authUrl + "/auth",String.class).getBody();
-	String fromDb = restTemplate.getForEntity(dbUrl + "/db",String.class).getBody();
+	//String authUrl = serviceUrl("auth-service");
+	//String dbUrl = serviceUrl("db-service");
+	String fromAuth = restTemplate.getForEntity("http://auth-service/auth",String.class).getBody();
+	String fromDb = restTemplate.getForEntity("http://db-service/db",String.class).getBody();
 	return (" ---  Process part  --- " + '\n' + fromAuth + '\n' + fromDb);
     }
 
