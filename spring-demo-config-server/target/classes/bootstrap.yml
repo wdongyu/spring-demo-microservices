@@ -4,7 +4,7 @@ spring:
     config:
       server:
         git:
-          uri: file:///home/wdongyu/spring-demo-microservices-config
+          uri: file:///Users/wangdongyu/Documents/114.212.86.144/spring-demo-microservices-config
 ---
 spring:
   profiles: local

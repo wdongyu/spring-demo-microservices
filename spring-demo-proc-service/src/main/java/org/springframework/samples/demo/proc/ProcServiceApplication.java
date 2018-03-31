@@ -15,8 +15,8 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class ProcServiceApplication {
 
+    //@LoadBalanced
     @Bean
-    @LoadBalanced
     RestTemplate restTemplate() {
 	return new RestTemplate();
     }
