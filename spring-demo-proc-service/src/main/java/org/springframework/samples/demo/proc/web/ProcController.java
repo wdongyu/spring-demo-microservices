@@ -6,6 +6,7 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +21,7 @@ import java.net.URLConnection;
 import java.util.List;
 
 
+
 /**
  * @author wdongyu
  */
@@ -27,7 +29,7 @@ import java.util.List;
 @RestController
 public class ProcController {
 
-    //private final Logger logger = Logger.getLogger(getClass());
+    private final Logger logger = Logger.getLogger(getClass());
 
     @Autowired
     RestTemplate restTemplate;
@@ -35,49 +37,68 @@ public class ProcController {
     @Autowired
     private DiscoveryClient client;
 
-    @RequestMapping(value = "/proc" ,method = RequestMethod.GET)
-    public String proc() {
+    @RequestMapping(value = "/proc/{commitId}/{username}/{password}" ,method = RequestMethod.GET)
+    public String proc(@PathVariable String commitId, @PathVariable String username, @PathVariable String password) {
         //ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
-	//String authUrl = serviceUrl("auth-service");
-    String dbUrl = serviceUrl("db-service") + "/db";
-    return dbUrl; 
-    //return restTemplate.getForEntity(dbUrl,String.class).getBody();
-	//String fromAuth = restTemplate.getForEntity("http://auth-service/auth",String.class).getBody();
-	//String fromDb = restTemplate.getForEntity("http://db-service/db",String.class).getBody();
-	//return (" ---  Process part  --- " + '\n' + fromAuth + '\n' + fromDb);
+        String authUrl = serviceUrlWithId("auth-service", commitId) + "/auth/proc/" + username + "/" + password;   
+        String fromAuth = restTemplate.getForEntity(authUrl,String.class).getBody();
+        if (fromAuth.equals("Pass")) {
+            String dbUrl = serviceUrl("db-service");
+            if (dbUrl == null)
+                return "No db-service available";
+            else 
+                return restTemplate.getForEntity(dbUrl + "/db", String.class).getBody();
+        }
+        else
+            return "Fail to authentication";
+
+        //String fromAuth = restTemplate.getForEntity("http://auth-service/auth",String.class).getBody();
+        //String fromDb = restTemplate.getForEntity("http://db-service/db",String.class).getBody();
+        //return (" ---  Process part  --- " + '\n' + fromAuth + '\n' + fromDb);
     }
 
 
-    public String serviceUrl(String serviceName) {
+    public String serviceUrlWithId(String serviceName, String commitId) {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
         try {
             if (list != null && list.size() > 0 ) {
-                URL url = new URL(list.get(list.size()-1).getUri().toString() + "/info");
-                
-                return getCommitId(url);
+                for (int i = 0; i < list.size(); i++) {
+                    URL url = new URL(list.get(i).getUri().toString() + "/info");
+                    URLConnection urlConnection = url.openConnection();
+                    urlConnection.connect();
+                    InputStream is = urlConnection.getInputStream();
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
+                    StringBuffer bs = new StringBuffer();
+                    String str = null;
+                    while((str=buffer.readLine())!=null){
+                        bs.append(str);
+                    }
+                    buffer.close();
+                    if (commitId.equals(getCommitId(bs.toString()))) 
+                        return list.get(i).getUri().toString();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         
+        return list.get(0).getUri().toString();
+    }
+
+    public String serviceUrl(String serviceName) {
+        List<ServiceInstance> list = this.client.getInstances(serviceName);
+        if (list != null && list.size() > 0 ) {
+            return list.get(0).getUri().toString();
+        }
         return null;
     }
 
-    public String getCommitId(URL url) {
+    public String getCommitId(String str) {
         try {
-            URLConnection urlConnection = url.openConnection();
-            urlConnection.connect();
-            InputStream is = urlConnection.getInputStream();
-            BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
-            StringBuffer bs = new StringBuffer();
-            String str = null;
-            while((str=buffer.readLine())!=null){
-                bs.append(str);
-            }
-
-            JSONObject json = (JSONObject)(new JSONParser().parse(bs.toString()));
+            if (str == null) return null;
+            JSONObject json = (JSONObject)(new JSONParser().parse(str));
             json = (JSONObject)(json.get("git"));
             json = (JSONObject)(json.get("commit"));
             return json.get("id").toString();
