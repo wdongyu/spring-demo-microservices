@@ -71,7 +71,7 @@ public class AuthController {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
         try {
             if (list != null && list.size() > 0 ) {
-                URL url = new URL(list.get(0).getUri().toString() + "/info");
+                URL url = new URL(list.get(list.size()-1).getUri().toString() + "/info");
                 URLConnection urlConnection = url.openConnection();
                 urlConnection.connect();
                 InputStream is = urlConnection.getInputStream();

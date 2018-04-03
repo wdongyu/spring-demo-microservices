@@ -90,7 +90,7 @@ public class PortalController {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
         String uri = null;
         if (list != null && list.size() > 0 ) {
-            uri = list.get(0).getUri().toString();
+            uri = list.get(list.size()-1).getUri().toString();
         }
 
         return uri;

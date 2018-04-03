@@ -64,7 +64,7 @@ public class ProcController {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
         try {
             if (list != null && list.size() > 0 ) {
-                for (int i = 0; i < list.size(); i++) {
+                for (int i = list.size()-1; i >= 0; i--) {
                     URL url = new URL(list.get(i).getUri().toString() + "/info");
                     URLConnection urlConnection = url.openConnection();
                     urlConnection.connect();
@@ -84,13 +84,13 @@ public class ProcController {
             e.printStackTrace();
         }
         
-        return list.get(0).getUri().toString();
+        return list.get(list.size()-1).getUri().toString();
     }
 
     public String serviceUrl(String serviceName) {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
         if (list != null && list.size() > 0 ) {
-            return list.get(0).getUri().toString();
+            return list.get(list.size()-1).getUri().toString();
         }
         return null;
     }
