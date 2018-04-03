@@ -42,6 +42,7 @@ public class ProcController {
         //ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
+
         String authUrl = serviceUrlWithId("auth-service", commitId) + "/auth/proc/" + username + "/" + password;   
         String fromAuth = restTemplate.getForEntity(authUrl,String.class).getBody();
         if (fromAuth.equals("Pass")) {

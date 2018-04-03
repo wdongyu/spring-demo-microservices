@@ -49,6 +49,7 @@ public class PortalController {
         //String portTime = getCommitTime(portInfo);
 
         String authUrl = serviceUrl("auth-service") + "/auth/portal/0/0";
+        logger.info(authUrl);
         if (authUrl == null)
             return "Not exist auth-service";
         else {
