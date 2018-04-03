@@ -37,14 +37,14 @@ public class ProcController {
     @Autowired
     private DiscoveryClient client;
 
-    @RequestMapping(value = "/proc/{commitId}/{username}/{password}" ,method = RequestMethod.GET)
-    public String proc(@PathVariable String commitId, @PathVariable String username, @PathVariable String password) {
-        //ServiceInstance instance = client.getLocalServiceInstance();
+    @RequestMapping(value = "/proc/{authPort}/{username}/{password}" ,method = RequestMethod.GET)
+    public String proc(@PathVariable String authPort, @PathVariable String username, @PathVariable String password) {
+        ServiceInstance instance = client.getLocalServiceInstance();
         //logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         //return "Info from Database";
 
-        String authUrl = serviceUrlWithId("auth-service", commitId) + "/auth/proc/" + username + "/" + password;   
-        String fromAuth = restTemplate.getForEntity(authUrl,String.class).getBody();
+        //String authUrl = serviceUrlWithId("auth-service", commitId) + "/auth/proc/" + username + "/" + password;   
+        String fromAuth = restTemplate.getForEntity("http://" + instance.getHost() + ":" + authPort + "/auth/proc/" + username + "/" + password, String.class).getBody();
         if (fromAuth.equals("Pass")) {
             String dbUrl = serviceUrl("db-service");
             if (dbUrl == null)
@@ -90,8 +90,28 @@ public class ProcController {
 
     public String serviceUrl(String serviceName) {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
-        if (list != null && list.size() > 0 ) {
-            return list.get(list.size()-1).getUri().toString();
+        try {
+            if (list != null && list.size() > 0 ) {
+                for (int i = list.size()-1; i >= 0; i--) {
+                    URL url = new URL(list.get(i).getUri().toString() + "/health");
+                    URLConnection urlConnection = url.openConnection();
+                    urlConnection.connect();
+                    InputStream is = urlConnection.getInputStream();
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
+                    StringBuffer bs = new StringBuffer();
+                    String str = null;
+                    while((str=buffer.readLine())!=null){
+                        bs.append(str);
+                    }
+                    buffer.close();
+                    String status = getStatus(bs.toString());
+                    logger.info(status);
+                    if (status != null && status.equals("UP"))
+                        return list.get(i).getUri().toString();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -103,6 +123,17 @@ public class ProcController {
             json = (JSONObject)(json.get("git"));
             json = (JSONObject)(json.get("commit"));
             return json.get("id").toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getStatus(String str) {
+        try {
+            JSONObject json = (JSONObject)(new JSONParser().parse(str));
+            return json.get("status").toString();
 
         } catch (Exception e) {
             e.printStackTrace();

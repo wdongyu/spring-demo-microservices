@@ -48,53 +48,51 @@ public class PortalController {
         //String portId = getCommitId(portInfo);
         //String portTime = getCommitTime(portInfo);
 
-        String authUrl = serviceUrl("auth-service") + "/auth/portal/0/0";
-        logger.info(authUrl);
+        String authUrl = serviceUrl("auth-service");
+        String authPort = authUrl.substring(authUrl.lastIndexOf(":") + 1); 
+        logger.info(authPort);
         if (authUrl == null)
             return "Not exist auth-service";
         else {
-            String fromAuth = restTemplate.getForEntity(authUrl, String.class).getBody();
+            String fromAuth = restTemplate.getForEntity(authUrl + "/auth/portal/0/0", String.class).getBody();
             int index = fromAuth.indexOf(":");
             String commitId = fromAuth.substring(0, index);
             String tmp = fromAuth.substring(index+1);
             index = tmp.indexOf(":");
             String username = tmp.substring(0, index), password = tmp.substring(index+1);
             logger.info(commitId + ":" + username + ":" + password);
-            String procUrl = serviceUrl("proc-service") + "/proc/" + commitId + "/" + username + "/" + password;
+            String procUrl = serviceUrl("proc-service") + "/proc/" + authPort + "/" + username + "/" + password;
+            logger.info(procUrl);
             return restTemplate.getForEntity(procUrl, String.class).getBody() + " " + commitId;
         }
     }
 
-    public String serviceInfo(String serviceName) {
+    public String serviceUrl(String serviceName) {
         List<ServiceInstance> list = this.client.getInstances(serviceName);
         try {
             if (list != null && list.size() > 0 ) {
-                URL url = new URL(list.get(list.size()-1).getUri().toString() + "/info");
-                URLConnection urlConnection = url.openConnection();
-                urlConnection.connect();
-                InputStream is = urlConnection.getInputStream();
-                BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
-                StringBuffer bs = new StringBuffer();
-                String str = null;
-                while((str=buffer.readLine())!=null){
-                    bs.append(str);
+                for (int i = list.size()-1; i >= 0; i--) {
+                    URL url = new URL(list.get(i).getUri().toString() + "/health");
+                    URLConnection urlConnection = url.openConnection();
+                    urlConnection.connect();
+                    InputStream is = urlConnection.getInputStream();
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
+                    StringBuffer bs = new StringBuffer();
+                    String str = null;
+                    while((str=buffer.readLine())!=null){
+                        bs.append(str);
+                    }
+                    buffer.close();
+                    String status = getStatus(bs.toString());
+                    logger.info(status);
+                    if (status != null && status.equals("UP"))
+                        return list.get(i).getUri().toString();
                 }
-                return bs.toString();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public String serviceUrl(String serviceName) {
-        List<ServiceInstance> list = this.client.getInstances(serviceName);
-        String uri = null;
-        if (list != null && list.size() > 0 ) {
-            uri = list.get(list.size()-1).getUri().toString();
-        }
-
-        return uri;
     }
 
     public String getCommitId(String str) {
@@ -112,12 +110,10 @@ public class PortalController {
         return null;
     }
 
-    public String getCommitTime(String str) {
+    public String getStatus(String str) {
         try {
             JSONObject json = (JSONObject)(new JSONParser().parse(str));
-            json = (JSONObject)(json.get("git"));
-            json = (JSONObject)(json.get("commit"));
-            return json.get("time").toString();
+            return json.get("status").toString();
 
         } catch (Exception e) {
             e.printStackTrace();

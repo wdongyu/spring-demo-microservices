@@ -44,7 +44,7 @@ public class AuthController {
         
         if (param.equals("portal")) {
             //logger.info(username + ":" + password);
-            String authId = getCommitId(serviceInfo("auth-service"));
+            String authId = getCommitId(serviceInfo());
             Random random = new Random();
             String retUsername = null;
             do {
@@ -55,7 +55,7 @@ public class AuthController {
             return (authId + ":" + retUsername + ":" + retPassword);
         }
         else if (param.equals("proc")) {
-            if (map.get(username).equals(password)) {
+            if (password.equals(map.get(username))) {
                 map.remove(username);
                 return "Pass";
             }
@@ -67,22 +67,21 @@ public class AuthController {
         }
     }
 
-    public String serviceInfo(String serviceName) {
-        List<ServiceInstance> list = this.client.getInstances(serviceName);
+    public String serviceInfo() {
+        //List<ServiceInstance> list = this.client.getInstances(serviceName);
         try {
-            if (list != null && list.size() > 0 ) {
-                URL url = new URL(list.get(list.size()-1).getUri().toString() + "/info");
-                URLConnection urlConnection = url.openConnection();
-                urlConnection.connect();
-                InputStream is = urlConnection.getInputStream();
-                BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
-                StringBuffer bs = new StringBuffer();
-                String str = null;
-                while((str=buffer.readLine())!=null){
-                    bs.append(str);
-                }
-                return bs.toString();
+            URL url = new URL(client.getLocalServiceInstance().getUri().toString() + "/info");
+            URLConnection urlConnection = url.openConnection();
+            urlConnection.connect();
+            InputStream is = urlConnection.getInputStream();
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
+            StringBuffer bs = new StringBuffer();
+            String str = null;
+            while((str=buffer.readLine())!=null){
+                bs.append(str);
             }
+            buffer.close();
+            return bs.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
