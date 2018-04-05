@@ -44,7 +44,7 @@ public class ProcController {
         //return "Info from Database";
 
         //String authUrl = serviceUrlWithId("auth-service", commitId) + "/auth/proc/" + username + "/" + password;   
-        String fromAuth = restTemplate.getForEntity("http://" + instance.getHost() + ":" + authPort + "/auth/proc/" + username + "/" + password, String.class).getBody();
+        /*String fromAuth = restTemplate.getForEntity("http://" + instance.getHost() + ":" + authPort + "/auth/proc/" + username + "/" + password, String.class).getBody();
         if (fromAuth.equals("Pass")) {
             String dbUrl = serviceUrl("db-service");
             if (dbUrl == null)
@@ -53,7 +53,9 @@ public class ProcController {
                 return restTemplate.getForEntity(dbUrl + "/db", String.class).getBody();
         }
         else
-            return "Fail to authentication";
+            return "Fail to authentication";*/
+
+        URL url = new URL("");
 
         //String fromAuth = restTemplate.getForEntity("http://auth-service/auth",String.class).getBody();
         //String fromDb = restTemplate.getForEntity("http://db-service/db",String.class).getBody();
