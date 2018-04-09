@@ -1,5 +1,7 @@
 package org.springframework.samples.demo.db.web;
 
+import com.netflix.discovery.DiscoveryManager;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -24,6 +26,7 @@ public class DbController {
     @RequestMapping(value = "/db" ,method = RequestMethod.GET)
     public String db() {
         ServiceInstance instance = client.getLocalServiceInstance();
+        //DiscoveryManager.getInstance().shutdownComponent();
         logger.info("/db, host:" + instance.getHost() + ", service_id:" + instance.getServiceId());
         return "Info from Database";
     }
