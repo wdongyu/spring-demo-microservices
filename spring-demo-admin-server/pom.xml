@@ -62,23 +62,23 @@
             <groupId>org.my-spring-boot-admin-server</groupId>
             <artifactId>my-spring-boot-admin-server</artifactId>
 	    <version>${spring-boot-admin.version}</version>
-	    <exclusions>
+	    <!--exclusions>
 	    <exclusion>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
         </exclusion>
-</exclusions>
+</exclusions-->
         </dependency>
         <dependency>
             <groupId>org.my-spring-boot-admin-server-ui</groupId>
             <artifactId>my-spring-boot-admin-server-ui</artifactId>
             <version>${spring-boot-admin.version}</version>
-	    <exclusions>
+	    <!--exclusions>
             <exclusion>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
         </exclusion>
-</exclusions>
+</exclusions-->
         </dependency>
         <!-- Third-party librairies -->
         <dependency>
